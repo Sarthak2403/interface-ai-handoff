@@ -16,20 +16,68 @@ from cua.logging_utils import configure
 from cua.replay.engine import ReplayEngine
 from cua.replay.errors import BusinessOutcome, InterventionRequired, ReplayError
 
+# async def discover(args):
+#     logger = logging.getLogger("cua")
+#     async with async_playwright() as p:
+#         browser = await p.chromium.launch(headless=not args.headed)
+#         page = await browser.new_page()
+#         await page.goto(args.url)
+#         surface = __import__("cua.surfaces.browser", fromlist=["BrowserSurface"]).BrowserSurface(page)
+#         planner = OfflinePlanner() if args.planner == "offline" else OllamaPlanner()
+
+#         for i in range(20):
+#             obs = await surface.observe()
+#             action = planner.next_action(
+#                 args.goal,
+#                 AgentObservation(**obs)
+#             )
+#             logger.info("discovery step=%s action=%s reason=%s", i + 1, action.type, action.reason)
+
+#             if action.type == "done":
+#                 break
+#             if action.type == "fill":
+#                 await surface.fill(action.strategy, action.target, action.value)
+#             elif action.type == "click":
+#                 await surface.click(action.strategy, action.target)
+#             elif action.type == "extract":
+#                 value = await surface.extract(action.strategy, action.target)
+#                 logger.info("extracted output=%s", value)
+#             elif action.type == "navigate":
+#                 await surface.navigate(action.value)
+
+#         artifact = demo_member_balance_artifact(args.url)
+#         Path(args.output).parent.mkdir(parents=True, exist_ok=True)
+#         Path(args.output).write_text(
+#             artifact.model_dump_json(indent=2),
+#             encoding="utf-8"
+#         )
+#         logger.info("artifact written to %s", args.output)
+#         await browser.close()
+
+from cua.artifact.compiler import demo_member_balance_artifact, compile_artifact_from_steps  # <-- import both
+
 async def discover(args):
     logger = logging.getLogger("cua")
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=not args.headed)
         page = await browser.new_page()
         await page.goto(args.url)
-        surface = __import__("cua.surfaces.browser", fromlist=["BrowserSurface"]).BrowserSurface(page)
+        surface = __import__("cua.surfaces.browser", fromlist=["BrowserSurface"]).BrowserSurface(
+                    page, allowed_domains=["127.0.0.1", "localhost"]
+                    )
         planner = OfflinePlanner() if args.planner == "offline" else OllamaPlanner()
+
+        recorded_steps = []
+        history = []
 
         for i in range(20):
             obs = await surface.observe()
+            elements = await surface.list_interactive_elements()
             action = planner.next_action(
                 args.goal,
-                AgentObservation(**obs)
+                AgentObservation(**obs),
+                elements=elements,
+                history=history,
             )
             logger.info("discovery step=%s action=%s reason=%s", i + 1, action.type, action.reason)
 
@@ -37,15 +85,28 @@ async def discover(args):
                 break
             if action.type == "fill":
                 await surface.fill(action.strategy, action.target, action.value)
+                recorded_steps.append({"action": action})
+                history.append(f"filled '{action.target}' with '{action.value}'")
             elif action.type == "click":
                 await surface.click(action.strategy, action.target)
+                recorded_steps.append({"action": action})
+                history.append(f"clicked '{action.target}'")
             elif action.type == "extract":
                 value = await surface.extract(action.strategy, action.target)
                 logger.info("extracted output=%s", value)
+                recorded_steps.append({"action": action, "output_name": "savings_balance"})
+                history.append(f"extracted '{action.target}' -> {value}")
             elif action.type == "navigate":
                 await surface.navigate(action.value)
+                recorded_steps.append({"action": action})
+                history.append(f"navigated to '{action.value}'") 
 
-        artifact = demo_member_balance_artifact(args.url)
+        # CHANGED: only fall back to the hardcoded demo artifact for the offline planner
+        if args.planner == "ollama":
+            artifact = compile_artifact_from_steps(recorded_steps, args.url)
+        else:
+            artifact = demo_member_balance_artifact(args.url)
+
         Path(args.output).parent.mkdir(parents=True, exist_ok=True)
         Path(args.output).write_text(
             artifact.model_dump_json(indent=2),
@@ -63,7 +124,9 @@ async def replay(args):
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=not args.headed)
         page = await browser.new_page()
-        surface = __import__("cua.surfaces.browser", fromlist=["BrowserSurface"]).BrowserSurface(page)
+        surface = __import__("cua.surfaces.browser", fromlist=["BrowserSurface"]).BrowserSurface(
+                            page, allowed_domains=["127.0.0.1", "localhost"]
+                        )
         engine = ReplayEngine(
             artifact, surface,
             intervention=intervention,

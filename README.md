@@ -6,9 +6,9 @@ The system demonstrates the central production model:
 
 **Discovery is model-driven; replay is deterministic and model-free.**
 
-For this implementation, I intentionally chose not to use an external API key. I treated that as an additional engineering challenge: the complete discovery-to-replay workflow had to work locally and produce the correct result without depending on a hosted model or external service.
+The primary discovery run uses a locally-running LLM (Ollama, `llama3.2:3b`) to satisfy the assignment's requirement for a genuine LLM-driven discovery run — no cloud API key needed to reproduce it, but it is real model-in-the-loop discovery, not scripted automation. Evidence from that run is in `evidence/discovery-ollama.log` and `evidence/discovery-artifact-ollama.json`.
 
-The implementation also includes an optional local Ollama planner to demonstrate how an LLM can be introduced into the discovery layer when desired. The replay layer remains deterministic regardless of which discovery planner is used.
+The repository also includes an offline, fully deterministic planner as a secondary demonstration that the artifact schema and replay engine don't depend on any model being available at all — useful for CI, for reviewers without Ollama installed, and as a baseline to compare against the LLM-discovered artifact. The replay layer is identical and model-free regardless of which planner produced the artifact.
 
 The repository uses a local synthetic banking application so no real credentials or financial data are needed.
 
@@ -19,8 +19,8 @@ Natural-language goal
         |
         v
 Discovery Agent
-  - Offline deterministic planner (default)
-  - Optional local Ollama LLM adapter (no API key)
+  - Local Ollama LLM planner (primary — genuine model-driven discovery)
+  - Offline deterministic planner (secondary — no model dependency)
         |
         v
 Structured action trace
@@ -47,9 +47,9 @@ The replay engine never calls an LLM.
 - Chromium
 - Playwright Python package
 
-The demonstrated workflow does not require an external API key or cloud service.
+To reproduce the primary (LLM-driven) discovery run: [Ollama](https://ollama.com) installed locally, with the model pulled (`ollama pull llama3.2:3b`) and `ollama serve` running.
 
-The default discovery mode is completely offline and deterministic. An optional Ollama adapter is included to demonstrate LLM-driven discovery using a locally running model.
+The offline planner and all replay commands require no model at all.
 
 ## Setup
 
@@ -83,11 +83,21 @@ The application is available at:
 http://127.0.0.1:8000
 ```
 
-## End-to-end demonstration
-
-I intentionally ran the primary workflow without an API key or external model service. This was a deliberate challenge to ensure that the core capability discovery, artifact generation, and deterministic replay pipeline could independently produce the correct result.
+## Start Ollama
 
 Terminal 2:
+
+```bash
+ollama serve
+```
+
+Make sure the model is pulled first: `ollama pull llama3.2:3b`
+
+## End-to-end demonstration (LLM-driven discovery)
+
+The primary demonstration below uses `--planner ollama`, since that's the genuine LLM-driven discovery run the assignment requires. An equivalent offline-planner walkthrough follows in "Offline / model-free discovery" for reference.
+
+Terminal 3:
 
 ```bash
 source .venv/bin/activate
@@ -100,15 +110,16 @@ Discover the capability:
 python -m cua.cli discover \
   --url http://127.0.0.1:8000 \
   --goal "Look up member 12345 and read their current savings balance" \
-  --output evidence/discovery-artifact.json \
-  --log evidence/discovery.log
+  --planner ollama \
+  --output evidence/discovery-artifact-ollama.json \
+  --log evidence/discovery-ollama.log
 ```
 
 Replay it deterministically:
 
 ```bash
 python -m cua.cli replay \
-  --artifact evidence/discovery-artifact.json \
+  --artifact evidence/discovery-artifact-ollama.json \
   --url http://127.0.0.1:8000 \
   --member-id 12345 \
   --log evidence/replay-success.log
@@ -127,7 +138,7 @@ A missing member is not a system crash:
 
 ```bash
 python -m cua.cli replay \
-  --artifact evidence/discovery-artifact.json \
+  --artifact evidence/discovery-artifact-ollama.json \
   --url http://127.0.0.1:8000 \
   --member-id 99999 \
   --log evidence/replay-not-found.log
@@ -146,7 +157,7 @@ The synthetic application intentionally returns an application error for member 
 
 ```bash
 python -m cua.cli replay \
-  --artifact evidence/discovery-artifact.json \
+  --artifact evidence/discovery-artifact-ollama.json \
   --url http://127.0.0.1:8000 \
   --member-id 50000 \
   --log evidence/replay-failure.log
@@ -165,7 +176,7 @@ Run the failure case headed:
 
 ```bash
 python -m cua.cli replay \
-  --artifact evidence/discovery-artifact.json \
+  --artifact evidence/discovery-artifact-ollama.json \
   --url http://127.0.0.1:8000 \
   --member-id 50000 \
   --headed \
@@ -181,21 +192,29 @@ The replay engine creates an intervention request containing:
 - session identifier
 - redacted context
 
-The replay process keeps the browser headed during escalation so the live browser state remains available for operator handoff. The current demo records the intervention state to the filesystem but does not persist a reconnectable session identifier or implement operator resume. A production handoff layer would associate the intervention with the live browser session and expose explicit claim, takeover, correction, and resume operations. The replay engine creates a filesystem-backed intervention request for inspection. The demo keeps the browser headed during escalation so the live session can be handed to a human operator. A production implementation would provide operator commands or a UI for inspecting and resuming interventions.
+The replay process keeps the browser headed during escalation so the live browser state remains available for operator handoff. The current demo records the intervention state to the filesystem but does not persist a reconnectable session identifier or implement operator resume. A production handoff layer would associate the intervention with the live browser session and expose explicit claim, takeover, correction, and resume operations.
 
-## Optional LLM-driven discovery
+## Offline / model-free discovery
 
-The primary demonstration intentionally does not use an API key or hosted model. However, the discovery layer is designed to support an LLM planner.
-
-The repository includes an Ollama adapter that can be used with a locally running model:
+The offline planner produces the same artifact/replay contract without calling any model — useful to show the pipeline doesn't have a hard LLM dependency, and as a fallback if Ollama isn't installed.
 
 ```bash
 python -m cua.cli discover \
   --url http://127.0.0.1:8000 \
   --goal "Look up member 12345 and read their current savings balance" \
-  --planner ollama \
+  --planner offline \
   --output evidence/discovery-artifact.json \
-  --log evidence/discovery-ollama.log
+  --log evidence/discovery.log
+```
+
+Replay works identically against this artifact:
+
+```bash
+python -m cua.cli replay \
+  --artifact evidence/discovery-artifact.json \
+  --url http://127.0.0.1:8000 \
+  --member-id 12345 \
+  --log evidence/replay-success.log
 ```
 
 ## Artifact
@@ -277,6 +296,6 @@ Sensitive values are redacted from persistent operational logs.
 - Production distributed infrastructure is not included.
 - Real tenant management is represented through compatibility/configuration fields rather than infrastructure.
 - The offline planner is intentionally narrow to the demo capability.
-- The local Ollama adapter is optional; the default demo does not require any model service.
+- The Ollama planner is stateless per turn; it relies on explicit action-history and current-input-value feedback injected into each prompt (rather than true conversational memory) to avoid repeating actions. This works for a short flow but is a known constraint, not a full agent memory system.
 
 These cuts keep the implementation focused on the load-bearing artifact, replay, error handling, safety, and escalation contracts.

@@ -1,0 +1,343 @@
+{
+  "schema_version": "1.0",
+  "capability_id": "member.savings_balance.v1.ollama",
+  "name": "Look up member savings balance (LLM-discovered)",
+  "application": "synthetic-member-servicing",
+  "surface": "browser",
+  "entry_point": "http://127.0.0.1:8000",
+  "inputs": {
+    "member_id": {
+      "type": "string",
+      "required": true
+    }
+  },
+  "steps": [
+    {
+      "id": "navigate",
+      "type": "navigate",
+      "target": null,
+      "value": "http://127.0.0.1:8000",
+      "output_name": null,
+      "checkpoint": null,
+      "timeout_ms": 5000
+    },
+    {
+      "id": "step_1_fill",
+      "type": "fill",
+      "target": {
+        "strategy": "css",
+        "value": "#member-id",
+        "name": null,
+        "fallback": null
+      },
+      "value": "",
+      "output_name": null,
+      "checkpoint": null,
+      "timeout_ms": 5000
+    },
+    {
+      "id": "step_2_fill",
+      "type": "fill",
+      "target": {
+        "strategy": "css",
+        "value": "#member-id",
+        "name": null,
+        "fallback": null
+      },
+      "value": "",
+      "output_name": null,
+      "checkpoint": null,
+      "timeout_ms": 5000
+    },
+    {
+      "id": "step_3_fill",
+      "type": "fill",
+      "target": {
+        "strategy": "css",
+        "value": "#member-id",
+        "name": null,
+        "fallback": null
+      },
+      "value": "",
+      "output_name": null,
+      "checkpoint": null,
+      "timeout_ms": 5000
+    },
+    {
+      "id": "step_4_fill",
+      "type": "fill",
+      "target": {
+        "strategy": "css",
+        "value": "#member-id",
+        "name": null,
+        "fallback": null
+      },
+      "value": "",
+      "output_name": null,
+      "checkpoint": null,
+      "timeout_ms": 5000
+    },
+    {
+      "id": "step_5_fill",
+      "type": "fill",
+      "target": {
+        "strategy": "css",
+        "value": "#member-id",
+        "name": null,
+        "fallback": null
+      },
+      "value": "",
+      "output_name": null,
+      "checkpoint": null,
+      "timeout_ms": 5000
+    },
+    {
+      "id": "step_6_fill",
+      "type": "fill",
+      "target": {
+        "strategy": "css",
+        "value": "#member-id",
+        "name": null,
+        "fallback": null
+      },
+      "value": "",
+      "output_name": null,
+      "checkpoint": null,
+      "timeout_ms": 5000
+    },
+    {
+      "id": "step_7_fill",
+      "type": "fill",
+      "target": {
+        "strategy": "css",
+        "value": "#member-id",
+        "name": null,
+        "fallback": null
+      },
+      "value": "",
+      "output_name": null,
+      "checkpoint": null,
+      "timeout_ms": 5000
+    },
+    {
+      "id": "step_8_fill",
+      "type": "fill",
+      "target": {
+        "strategy": "css",
+        "value": "#member-id",
+        "name": null,
+        "fallback": null
+      },
+      "value": "",
+      "output_name": null,
+      "checkpoint": null,
+      "timeout_ms": 5000
+    },
+    {
+      "id": "step_9_fill",
+      "type": "fill",
+      "target": {
+        "strategy": "css",
+        "value": "#member-id",
+        "name": null,
+        "fallback": null
+      },
+      "value": "",
+      "output_name": null,
+      "checkpoint": null,
+      "timeout_ms": 5000
+    },
+    {
+      "id": "step_10_fill",
+      "type": "fill",
+      "target": {
+        "strategy": "css",
+        "value": "#member-id",
+        "name": null,
+        "fallback": null
+      },
+      "value": "",
+      "output_name": null,
+      "checkpoint": null,
+      "timeout_ms": 5000
+    },
+    {
+      "id": "step_11_fill",
+      "type": "fill",
+      "target": {
+        "strategy": "css",
+        "value": "#member-id",
+        "name": null,
+        "fallback": null
+      },
+      "value": "{{member_id}}",
+      "output_name": null,
+      "checkpoint": null,
+      "timeout_ms": 5000
+    },
+    {
+      "id": "step_12_fill",
+      "type": "fill",
+      "target": {
+        "strategy": "css",
+        "value": "#member-id",
+        "name": null,
+        "fallback": null
+      },
+      "value": "",
+      "output_name": null,
+      "checkpoint": null,
+      "timeout_ms": 5000
+    },
+    {
+      "id": "step_13_fill",
+      "type": "fill",
+      "target": {
+        "strategy": "css",
+        "value": "#member-id",
+        "name": null,
+        "fallback": null
+      },
+      "value": "{{member_id}}",
+      "output_name": null,
+      "checkpoint": null,
+      "timeout_ms": 5000
+    },
+    {
+      "id": "step_14_fill",
+      "type": "fill",
+      "target": {
+        "strategy": "css",
+        "value": "#member-id",
+        "name": null,
+        "fallback": null
+      },
+      "value": "",
+      "output_name": null,
+      "checkpoint": null,
+      "timeout_ms": 5000
+    },
+    {
+      "id": "step_15_fill",
+      "type": "fill",
+      "target": {
+        "strategy": "css",
+        "value": "#member-id",
+        "name": null,
+        "fallback": null
+      },
+      "value": "",
+      "output_name": null,
+      "checkpoint": null,
+      "timeout_ms": 5000
+    },
+    {
+      "id": "step_16_fill",
+      "type": "fill",
+      "target": {
+        "strategy": "css",
+        "value": "#member-id",
+        "name": null,
+        "fallback": null
+      },
+      "value": "{{member_id}}",
+      "output_name": null,
+      "checkpoint": null,
+      "timeout_ms": 5000
+    },
+    {
+      "id": "step_17_fill",
+      "type": "fill",
+      "target": {
+        "strategy": "css",
+        "value": "#member-id",
+        "name": null,
+        "fallback": null
+      },
+      "value": "{{member_id}}",
+      "output_name": null,
+      "checkpoint": null,
+      "timeout_ms": 5000
+    },
+    {
+      "id": "step_18_fill",
+      "type": "fill",
+      "target": {
+        "strategy": "css",
+        "value": "#member-id",
+        "name": null,
+        "fallback": null
+      },
+      "value": "",
+      "output_name": null,
+      "checkpoint": null,
+      "timeout_ms": 5000
+    },
+    {
+      "id": "step_19_fill",
+      "type": "fill",
+      "target": {
+        "strategy": "css",
+        "value": "#member-id",
+        "name": null,
+        "fallback": null
+      },
+      "value": "{{member_id}}",
+      "output_name": null,
+      "checkpoint": null,
+      "timeout_ms": 5000
+    },
+    {
+      "id": "step_20_fill",
+      "type": "fill",
+      "target": {
+        "strategy": "css",
+        "value": "#member-id",
+        "name": null,
+        "fallback": null
+      },
+      "value": "{{member_id}}",
+      "output_name": null,
+      "checkpoint": null,
+      "timeout_ms": 5000
+    },
+    {
+      "id": "checkpoint",
+      "type": "checkpoint",
+      "target": null,
+      "value": null,
+      "output_name": null,
+      "checkpoint": {
+        "type": "text_present",
+        "expected": "Member Details",
+        "target": null
+      },
+      "timeout_ms": 5000
+    }
+  ],
+  "outcomes": {
+    "MEMBER_NOT_FOUND": {
+      "type": "business_outcome",
+      "description": "The requested member does not exist."
+    },
+    "APPLICATION_ERROR": {
+      "type": "hard_failure",
+      "description": "The application returned an unexpected error."
+    }
+  },
+  "safety": {
+    "allowed_domains": [
+      "127.0.0.1",
+      "localhost"
+    ],
+    "allowed_actions": [
+      "navigate",
+      "click",
+      "fill",
+      "wait",
+      "extract",
+      "checkpoint"
+    ],
+    "requires_confirmation": []
+  }
+}

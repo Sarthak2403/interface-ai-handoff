@@ -1,6 +1,5 @@
 from .schema import ( CapabilityArtifact, InputSpec, Action, Locator, Checkpoint, SafetyPolicy, )
 
-
 def demo_member_balance_artifact(url: str) -> CapabilityArtifact:
     """
     Compile the discovered member-balance capability into a reusable,
@@ -92,3 +91,75 @@ def demo_member_balance_artifact(url: str) -> CapabilityArtifact:
             requires_confirmation=[],
         ),
     )
+
+
+def compile_artifact_from_steps(recorded_steps: list[dict], entry_point: str) -> CapabilityArtifact:
+    """
+    Build a real CapabilityArtifact from the actual actions taken during a
+    successful discovery run — NOT a hardcoded stand-in.
+    """
+    steps = [{
+        "id": "navigate",
+        "type": "navigate",
+        "target": None,
+        "value": entry_point,
+        "output_name": None,
+        "checkpoint": None,
+        "timeout_ms": 5000,
+    }]
+
+    for i, rec in enumerate(recorded_steps):
+        action = rec["action"]
+        value = action.value
+        # parameterize the member id the same way the offline artifact does
+        if action.type == "fill" and value and value.strip().isdigit():
+            value = "{{member_id}}"
+
+        steps.append({
+            "id": f"step_{i+1}_{action.type}",
+            "type": action.type,
+            "target": {
+                "strategy": action.strategy,
+                "value": action.target,
+                "name": None,
+                "fallback": None,
+            } if action.target else None,
+            "value": value,
+            "output_name": rec.get("output_name"),
+            "checkpoint": None,
+            "timeout_ms": 5000,
+        })
+
+    steps.append({
+        "id": "checkpoint",
+        "type": "checkpoint",
+        "target": None,
+        "value": None,
+        "output_name": None,
+        "checkpoint": {
+            "type": "text_present",
+            "expected": "Member Details",
+            "target": None,
+        },
+        "timeout_ms": 5000,
+    })
+
+    return CapabilityArtifact.model_validate({
+        "schema_version": "1.0",
+        "capability_id": "member.savings_balance.v1.ollama",
+        "name": "Look up member savings balance (LLM-discovered)",
+        "application": "synthetic-member-servicing",
+        "surface": "browser",
+        "entry_point": entry_point,
+        "inputs": {"member_id": {"type": "string", "required": True}},
+        "steps": steps,
+        "outcomes": {
+            "MEMBER_NOT_FOUND": {"type": "business_outcome", "description": "The requested member does not exist."},
+            "APPLICATION_ERROR": {"type": "hard_failure", "description": "The application returned an unexpected error."},
+        },
+        "safety": {
+            "allowed_domains": ["127.0.0.1", "localhost"],
+            "allowed_actions": ["navigate", "click", "fill", "wait", "extract", "checkpoint"],
+            "requires_confirmation": [],
+        },
+    })
