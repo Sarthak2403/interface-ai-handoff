@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+<head>
+  <title>Member Servicing Console</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; background: #f4f4f4; }
+    .panel { background: white; padding: 24px; max-width: 800px; margin: auto; border: 1px solid #ccc; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    td, th { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    .error { padding: 12px; border: 1px solid #900; }
+  </style>
+</head>
+<body>
+<div class="panel">
+{% if error %}
+  <h1>Application Error</h1>
+  <div class="error">{{ message }}</div>
+{% elif not_found %}
+  <h1>Member Search</h1>
+  <div id="member-not-found">Member not found</div>
+  <p>No member exists for ID {{ member_id }}.</p>
+{% else %}
+  <h1>Member Details</h1>
+  <p><strong>Member:</strong> {{ member.name }}</p>
+  <p><strong>Member ID:</strong> {{ member_id }}</p>
+  <table>
+    <tr><th>Account Type</th><th>Current Balance</th></tr>
+    <tr><td>Savings</td><td>{{ member.savings }}</td></tr>
+    <tr><td>Checking</td><td>{{ member.checking }}</td></tr>
+  </table>
+{% endif %}
+</div>
+</body>
+</html>

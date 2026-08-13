@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0",
+  "capability_id": "member.savings_balance.v1",
+  "name": "Look up member savings balance",
+  "application": "synthetic-member-servicing",
+  "surface": "browser",
+  "entry_point": "http://127.0.0.1:8000",
+  "inputs": {
+    "member_id": {
+      "type": "string",
+      "required": true
+    }
+  },
+  "steps": [],
+  "outcomes": {
+    "MEMBER_NOT_FOUND": {
+      "type": "business_outcome",
+      "description": "The requested member does not exist."
+    },
+    "APPLICATION_ERROR": {
+      "type": "hard_failure",
+      "description": "The application returned an unexpected error."
+    }
+  },
+  "safety": {
+    "allowed_domains": [
+      "127.0.0.1",
+      "localhost"
+    ],
+    "allowed_actions": [
+      "navigate",
+      "click",
+      "fill",
+      "wait",
+      "extract",
+      "checkpoint"
+    ],
+    "requires_confirmation": []
+  }
+}
